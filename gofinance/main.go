@@ -42,35 +42,16 @@ func main() {
 	src = bloomberg.New()
 	src = yahoofinance.NewYql()
 
-	// symbols := []string{
-	// 	"VEUR.AS",
-	// 	"VJPN.AS",
-	// 	"VHYL.AS",
-	// 	"AAPL",
-	// 	"APC.F",
-	// 	"GSZ.PA",
-	// 	"COFB.BR",
-	// 	"BEFB.BR",
-	// 	"GIMB.BR",
-	// 	"ELI.BR",
-	// 	"DELB.BR",
-	// 	"BELG.BR",
-	// 	"TNET.BR",
-	// }
-
 	symbols := []string{
-		"VEUR.AS",
-		"VFEM.AS",
-		"BELG.BR",
-		"UMI.BR",
-		"SOLB.BR",
-		"KBC.BR",
-		"DIE.BR",
-		"DL.BR",
-		"BEKB.BR",
-		"ACKB.BR",
-		"ABI.BR",
-		"EURUSD=X",
+		"SWKS",
+		"NVO",
+		"T",
+		"UNH",
+		"SBUX",
+		"ACN",
+		"MAN",
+		"VTI",
+		"WHG",
 	}
 
 	sqlitecache.VERBOSITY = 0
@@ -187,7 +168,7 @@ func calc(src fquery.Source, symbols ...string) {
 		if r.Bid != 0 && r.Ask != 0 {
 			bidAskSpreadPerc := (r.Ask - r.Bid) / r.Bid
 			bidAskPrint := binaryfp(bidAskSpreadPerc*100, bidAskSpreadPerc < maxBidAskSpreadPerc)
-			fmt.Printf("bid/ask: %v/%v, spread: %v (%v)\n",
+			fmt.Printf("bid/ask: %v/%v, spread: %v (%v)\t",
 				numberf(r.Bid), numberf(r.Ask), numberf(r.Ask-r.Bid), bidAskPrint)
 			if bidAskSpreadPerc < maxBidAskSpreadPerc {
 				fmt.Printf("if you want to buy this stock, place a %v at about %v\n", green("limit order"), greenf((r.Ask+r.Bid)/2))
@@ -198,18 +179,18 @@ func calc(src fquery.Source, symbols ...string) {
 
 		fmt.Printf("prevclose/open/lasttrade: %v/%v/%v\n",
 			numberf(r.PreviousClose), numberf(r.Open), numberf(r.LastTradePrice))
-		fmt.Printf("day low/high: %v/%v (%v)\n", numberf(r.DayLow), numberf(r.DayHigh), numberf(r.DayHigh-r.DayLow))
-		fmt.Printf("year low/high: %v/%v (%v)\n", numberf(r.YearLow), numberf(r.YearHigh), numberf(r.YearHigh-r.YearLow))
+		fmt.Printf("day low/high: %v/%v (%v) |", numberf(r.DayLow), numberf(r.DayHigh), numberf(r.DayHigh-r.DayLow))
+		fmt.Printf("year low/high: %v/%v (%v) |", numberf(r.YearLow), numberf(r.YearHigh), numberf(r.YearHigh-r.YearLow))
 		fmt.Printf("moving avg. 50/200: %v/%v\n", numberf(r.Ma50), numberf(r.Ma200))
 		divYield := binaryfp(r.DividendYield*100, r.DividendYield > minDivYield)
-		fmt.Printf("last ex-dividend: %v, div. per share: %v, div. yield: %v,\n earnings per share: %v, dividend payout ratio: %v\n",
+		fmt.Printf("last ex-dividend: %v, div. per share: %v, div. yield: %v, earnings per share: %v, dividend payout ratio: %v\n",
 			r.DividendExDate.Format("02/01"), numberf(r.DividendPerShare),
 			divYield, numberf(r.EarningsPerShare), numberf(r.DivPayoutRatio()))
 		fmt.Printf("You would need to buy %v (€ %v) shares of this stock to reach a transaction cost below %v%%\n",
 			greenf(amountOfsharesForLowTxCost), greenf(amountOfsharesForLowTxCost*price), desiredTxCostPerc*100)
 		if r.PeRatio != 0 {
 			// terminal.Stdout.Colorf("The P/E-ratio is @m%.2f@|, ", r.PeRatio)
-			fmt.Println("The P/E-ratio is %v, ", numberf(r.PeRatio))
+			fmt.Printf("The P/E-ratio is %v, ", numberf(r.PeRatio))
 			switch {
 			case 0 <= r.PeRatio && r.PeRatio <= 10:
 				underv := green("undervalued")
@@ -222,7 +203,7 @@ func calc(src fquery.Source, symbols ...string) {
 				overv := red("overvalued")
 				incrlast := green("earnings have increased since the last earnings call")
 				increxp := green("earnings expected to increase substantially in the future")
-				fmt.Printf("either the stock is %v or the %v figure was published. The stock may also be a growth stock with %v.\n",
+				fmt.Printf("either the stock is %v or the %v figure was published.\n The stock may also be a growth stock with %v.\n",
 					overv, incrlast, increxp)
 			case 26 <= r.PeRatio:
 				bubble := red("bubble")
